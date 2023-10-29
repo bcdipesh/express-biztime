@@ -81,20 +81,14 @@ router.put("/:id", async (req, res, next) => {
       throw new ExpressError("Need at least one property to update", 400);
     }
 
-    // Check if invoice exists.
-    const existingInvoice = await db.query(
-      "SELECT * FROM invoices WHERE id = $1;",
-      [id]
-    );
-
-    if (existingInvoice.rowCount === 0) {
-      throw new ExpressError("Not Found", 404);
-    }
-
     const updatedInvoice = await db.query(
       "UPDATE invoices SET amt = $1 WHERE id = $2 RETURNING id, comp_code, amt, paid, add_date, paid_date;",
       [amt, id]
     );
+
+    if (updatedInvoice.rowCount === 0) {
+      throw new ExpressError("Not Found", 404);
+    }
 
     return res.json({
       invoice: updatedInvoice.rows[0],
@@ -109,17 +103,14 @@ router.delete("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Check if invoice exists.
-    const existingInvoice = await db.query(
-      "SELECT * FROM invoices WHERE id = $1;",
+    const result = await db.query(
+      "DELETE FROM invoices WHERE id = $1 RETURNING id;",
       [id]
     );
 
-    if (existingInvoice.rowCount === 0) {
+    if (result.rowCount === 0) {
       throw new ExpressError("Not Found", 404);
     }
-
-    await db.query("DELETE FROM invoices WHERE id = $1;", [id]);
 
     return res.json({
       status: "deleted",
