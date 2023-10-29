@@ -64,7 +64,7 @@ router.put("/:code", async (req, res, next) => {
       throw new ExpressError("Need at least one property to update", 400);
     }
 
-    // Check if the company exists
+    // Check if the company exists.
     const existingCompany = await db.query(
       "SELECT * FROM companies WHERE code = $1;",
       [code]
@@ -74,7 +74,7 @@ router.put("/:code", async (req, res, next) => {
       throw new ExpressError("Not Found", 404);
     }
 
-    // Use the || operator to provide default values if name or description is not provided
+    // Use the || operator to provide default values if name or description is not provided.
     const updatedName = name || existingCompany.rows[0].name;
     const updatedDescription =
       description || existingCompany.rows[0].description;
@@ -97,7 +97,7 @@ router.delete("/:code", async (req, res, next) => {
   try {
     const { code } = req.params;
 
-    // Check if the company exists
+    // Check if the company exists.
     const existingCompany = await db.query(
       "SELECT * FROM companies WHERE code = $1;",
       [code]
