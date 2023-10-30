@@ -1,4 +1,5 @@
 /* Company routes for BizTime. */
+const slugify = require("slugify");
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
@@ -39,7 +40,8 @@ router.get("/:code", async (req, res, next) => {
 // Adds a company based on the JSON data received.
 router.post("/", async (req, res, next) => {
   try {
-    const { code, name, description } = req.body;
+    let { name, description } = req.body;
+    let code = slugify(name, { lower: true });
 
     const result = await db.query(
       "INSERT INTO companies (code, name, description) VALUES ($1, $2, $3) RETURNING code, name, description;",

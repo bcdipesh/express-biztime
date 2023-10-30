@@ -69,20 +69,21 @@ describe("GET /companies/:code", () => {
 describe("POST /companies", () => {
   /** Delete the newly created company after testing is done */
   afterAll(async () => {
-    await db.query("DELETE FROM companies WHERE code = 'li';");
+    await db.query("DELETE FROM companies WHERE code = 'lorem-ipsum';");
   });
 
   test("Adds and returns the newly created company", async () => {
-    const code = "li";
     const name = "Lorem Ipsum";
     const description = "Lorem Ipsum Dolor Init";
 
     const resp = await request(app)
       .post("/companies")
-      .send({ code, name, description });
+      .send({ name, description });
 
     expect(resp.statusCode).toBe(201);
-    expect(resp.body).toEqual({ company: { code, name, description } });
+    expect(resp.body).toEqual({
+      company: { code: "lorem-ipsum", name, description },
+    });
   });
 });
 
