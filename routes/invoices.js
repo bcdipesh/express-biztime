@@ -75,20 +75,39 @@ router.post("/", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { amt } = req.body;
+    const { amt, paid } = req.body;
 
-    if (!amt) {
+    if (!amt && paid === undefined) {
+      // Check if at least 'amt' or 'paid' is provided
       throw new ExpressError("Need at least one property to update", 400);
     }
 
-    const updatedInvoice = await db.query(
-      "UPDATE invoices SET amt = $1 WHERE id = $2 RETURNING id, comp_code, amt, paid, add_date, paid_date;",
-      [amt, id]
+    // Check if the invoice exists
+    const invoiceQuery = await db.query(
+      "SELECT * FROM invoices WHERE id = $1;",
+      [id]
     );
 
-    if (updatedInvoice.rowCount === 0) {
-      throw new ExpressError("Not Found", 404);
+    const invoice = invoiceQuery.rows[0];
+
+    if (!invoice) {
+      throw new ExpressError("Invoice not found", 404);
     }
+
+    let paidDate = null;
+
+    if (paid) {
+      paidDate = new Date();
+    } else if (!paid) {
+      paidDate = null;
+    } else {
+      paidDate = invoice.paid_date;
+    }
+
+    const updatedInvoice = await db.query(
+      "UPDATE invoices SET amt = $1, paid = $2, paid_date = $3 WHERE id = $4 RETURNING id, comp_code, amt, paid, add_date, paid_date;",
+      [amt, paid, paidDate, id]
+    );
 
     return res.json({
       invoice: updatedInvoice.rows[0],

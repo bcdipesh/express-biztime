@@ -128,12 +128,16 @@ describe("POST /invoices", () => {
 describe("PUT /invoices/:id", () => {
   /** Reset data after test is done */
   afterAll(
-    async () => await db.query("UPDATE invoices SET amt = 400 WHERE id = 4;")
+    async () =>
+      await db.query(
+        "UPDATE invoices SET amt = 400, paid = false, paid_date = null WHERE id = 4;"
+      )
   );
 
   test("Updates an invoice and returns it", async () => {
     const resp = await request(app).put("/invoices/4").send({
       amt: 500,
+      paid: true,
     });
 
     expect(resp.statusCode).toBe(200);
@@ -142,9 +146,9 @@ describe("PUT /invoices/:id", () => {
         id: 4,
         comp_code: "ibm",
         amt: 500,
-        paid: false,
+        paid: true,
         add_date: expect.any(String),
-        paid_date: null,
+        paid_date: expect.any(String),
       },
     });
   });
